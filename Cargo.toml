@@ -1,0 +1,17 @@
+[package]
+name = "pure_lang_cli"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+libloading = "0.8.8"
+global = { package = "pure_lang_global", path = "../global" }
+clap = { version = "4.5.41", features = ["error-context", "unicode", "derive"] }
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+thiserror = "2.0.12"
+dynamic = { path = "../dynamic", package = "pure_lang_dynamic" }
+
+[[bin]]
+name = "purelang"
+path = "src/main.rs"
