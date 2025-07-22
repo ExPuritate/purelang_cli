@@ -4,7 +4,6 @@ use crate::CompileArgs;
 use dynamic::CompileServiceTrait;
 use global::configs::compiler::CompileServiceConfig;
 use libloading::Library;
-use std::mem::ManuallyDrop;
 use std::ops::{Deref, DerefMut};
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
@@ -57,8 +56,7 @@ impl DerefMut for CompileService {
 }
 
 pub fn handle(args: CompileArgs) -> global::Result<()> {
-    let core_path = std::path::absolute(&args.core)?;
-    let mut compile_service = CompileService::new(core_path.as_path())?;
+    let mut compile_service = CompileService::new(args.core.as_str())?;
     for compiler in &args.compilers {
         compile_service.load_compiler_from_path(compiler)?;
     }

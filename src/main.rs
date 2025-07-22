@@ -25,10 +25,12 @@ enum Command {
 struct CompileArgs {
     #[arg(long)]
     #[arg(default_value_t = match std::env::var("PURELANG_HOME") {
-        Ok(val) => format!("{val}/Native/CompileService.module"),
+        Ok(val) => format!("{val}/Native/CompileService"),
         Err(_) => "CompileService".to_owned(),
     })]
     core: String,
+    #[arg(long = "cfg-path")]
+    config_path: Option<String>,
     #[arg(long)]
     compilers: Vec<String>,
     #[arg(long, short = 's')]
@@ -39,7 +41,7 @@ struct CompileArgs {
 struct RunArgs {
     #[arg(long)]
     #[arg(default_value_t = match std::env::var("PURELANG_HOME") {
-        Ok(val) => format!("{val}/Native/Runtime.module"),
+        Ok(val) => format!("{val}/Native/Runtime"),
         Err(_) => "Runtime".to_owned(),
     })]
     core: String,
