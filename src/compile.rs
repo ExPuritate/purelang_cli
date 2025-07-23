@@ -56,7 +56,13 @@ impl DerefMut for CompileService {
 }
 
 pub fn handle(args: CompileArgs) -> global::Result<()> {
-    let mut compile_service = CompileService::new(args.core.as_str())?;
+    let mut compile_service = match &args.config_path {
+        Some(path) => CompileService::with_config(
+            args.core.as_str(),
+            serde_json::from_str(std::fs::read_to_string(path)?.as_str())?,
+        )?,
+        None => CompileService::new(args.core.as_str())?,
+    };
     for compiler in &args.compilers {
         compile_service.load_compiler_from_path(compiler)?;
     }

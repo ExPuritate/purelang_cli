@@ -4,7 +4,7 @@
 mod compile;
 mod run;
 
-use clap::{Args, Parser, Subcommand};
+use clap::{Args, Parser, Subcommand, ValueEnum};
 use std::fmt::Display;
 
 #[derive(Parser, Clone, Debug)]
@@ -45,6 +45,10 @@ struct RunArgs {
         Err(_) => "Runtime".to_owned(),
     })]
     core: String,
+    #[arg(long = "cfg-path")]
+    config_path: Option<String>,
+    #[arg(long = "cfg-type", default_value_t = ConfigType::Json)]
+    config_type: ConfigType,
     #[arg(long = "assembly")]
     main_assembly_name: String,
     #[arg(long = "class")]
@@ -53,6 +57,25 @@ struct RunArgs {
     assemblies: Vec<String>,
     #[arg(trailing_var_arg = true)]
     arguments: Vec<String>,
+}
+
+#[derive(ValueEnum, Clone, Debug)]
+pub enum ConfigType {
+    Json,
+}
+
+impl ConfigType {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Json => "JSON",
+        }
+    }
+}
+
+impl Display for ConfigType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
+    }
 }
 
 #[derive(thiserror::Error, Debug)]

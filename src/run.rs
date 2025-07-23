@@ -1,4 +1,4 @@
-use crate::RunArgs;
+use crate::{ConfigType, RunArgs};
 use dynamic::runtime_export::{AssemblyManagerTrait, VMTrait};
 use global::configs::runtime::VMConfig;
 use libloading::Library;
@@ -37,6 +37,7 @@ impl VM {
             Ok(Self { inner })
         }
     }
+    #[allow(unused)]
     pub fn with_config_assembly_manager<P: AsRef<Path>>(
         p: P,
         config: VMConfig,
@@ -69,11 +70,13 @@ impl DerefMut for VM {
     }
 }
 
+#[allow(unused)]
 pub struct AssemblyManager {
     inner: Arc<dyn AssemblyManagerTrait>,
 }
 
 impl AssemblyManager {
+    #[allow(unused)]
     pub fn new<P: AsRef<Path>>(p: P) -> global::Result<Self> {
         let lib = init(p)?;
         unsafe {
@@ -100,8 +103,16 @@ impl DerefMut for AssemblyManager {
     }
 }
 
-pub fn handle(args: RunArgs) -> global::Result<()> {
-    let vm = VM::new(&args.core)?;
+pub fn handle(args: RunArgs) -> global::Result<u64> {
+    let vm = match &args.config_path {
+        None => VM::new(&args.core)?,
+        Some(config_path) => {
+            let config = match args.config_type {
+                ConfigType::Json => serde_json::from_slice(&std::fs::read(config_path)?)?,
+            };
+            VM::with_config(&args.core, config)?
+        }
+    };
     let mut assemblies = Vec::new();
     for assem_path in &args.assemblies {
         assemblies.push(dynamic::runtime_export::binary::Assembly::from_file(
@@ -111,9 +122,9 @@ pub fn handle(args: RunArgs) -> global::Result<()> {
     vm.assembly_manager()
         .load_from_binary_assemblies(&assemblies)?;
     vm.clone().load_statics()?;
-    std::process::exit(vm.clone().new_cpu().1.run(
+    vm.clone().new_cpu().1.run(
         args.main_assembly_name.into(),
         args.main_class_name.into(),
         args.arguments,
-    )? as i32);
+    )
 }
